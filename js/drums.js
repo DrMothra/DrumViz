@@ -6,6 +6,8 @@
 var HIHAT=0, SNARE=1, UPPERTOM=2, MIDTOM=3;
 var FLOORTOM=4, KICK=5, CRASH=6, RIDE=7;
 
+var soundManager = null;
+
 function DrumApp() {
     BaseApp.call(this);
 }
@@ -21,8 +23,8 @@ DrumApp.prototype.createScene = function() {
     BaseApp.prototype.createScene.call(this);
 
     //Drums
-    var drumNames = ["Hihat", "Snare", "UpperTom", "MidTom",
-            "FloorTom", "Kick", "Crash", "Ride"];
+    var drumNames = ["hihat", "snare", "uppertom", "midtom",
+            "floortom", "kick", "crash", "ride"];
     var pos = [
         -207, 237, 64, //Hihat
         -100, 190, 96, //Snare
@@ -137,6 +139,11 @@ DrumApp.prototype.update = function() {
 
     this.elapsedTime += this.clock.getDelta();
 
+    if(this.elapsedTime >= 0.5) {
+        this.hitMeshes[HIHAT].visible = !this.hitMeshes[HIHAT].visible;
+        this.elapsedTime = 0;
+        soundManager.playSound("hihat");
+    }
 };
 
 DrumApp.prototype.keydown = function(event) {
@@ -157,6 +164,10 @@ $(document).ready(function() {
     skel.init();
 
     var container = document.getElementById("WebGL-output");
+    soundManager = new audioManager();
+    soundManager.init();
+    soundManager.loadSound("hihat");
+
     var app = new DrumApp();
     app.init(container);
     app.createGUI();
