@@ -7,7 +7,6 @@
 var audioManager = function() {
     this.context = null;
     this.url = "sounds/";
-    this.soundBuffers = [];
     this.extension = ".wav";
 };
 
@@ -19,7 +18,7 @@ audioManager.prototype = {
 
     constructor: audioManager,
 
-    init: function() {
+    init: function(sounds) {
         try {
             window.AudioContext = window.AudioContext || window.webkitAudioContext;
             this.context = new AudioContext();
@@ -27,12 +26,18 @@ audioManager.prototype = {
         catch (error) {
             alert("Web Audio API not supported");
         }
+        //Load drum sounds
+        var numSounds = sounds.length;
+        this.soundBuffers = new Array(numSounds);
+        for(var i=0; i<numSounds; ++i) {
+            this.loadSound(sounds[i], i);
+        }
     },
 
-    loadSound: function(sound) {
+    loadSound: function(sound, id) {
         //Load all sounds asynchronously
         var _this = this;
-        var request, soundObj;
+        var request;
 
         request = new XMLHttpRequest();
         request.open("GET", this.url + sound + this.extension, true);
@@ -40,17 +45,17 @@ audioManager.prototype = {
 
         request.onload = function() {
             _this.context.decodeAudioData(request.response, function(buffer) {
-                soundObj = {};
-                soundObj.id = sound;
-                soundObj.buffer = buffer;
-                _this.soundBuffers.push(soundObj);
+                _this.soundBuffers[id] = buffer;
             }, onError);
         };
 
         request.send();
     },
 
-    playSound: function(sound) {
-        console.log(this.soundBuffers[sound]);
+    playSound: function(sound, time) {
+        var source = this.context.createBufferSource();
+        source.buffer = this.soundBuffers[sound];
+        source.connect(this.context.destination);
+        source.start(time);
     }
 };

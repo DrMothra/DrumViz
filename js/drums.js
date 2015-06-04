@@ -142,7 +142,9 @@ DrumApp.prototype.update = function() {
     if(this.elapsedTime >= 0.5) {
         this.hitMeshes[HIHAT].visible = !this.hitMeshes[HIHAT].visible;
         this.elapsedTime = 0;
-        soundManager.playSound("hihat");
+        soundManager.playSound(KICK, 0);
+        soundManager.playSound(HIHAT, 0);
+        soundManager.playSound(CRASH, 0);
     }
 };
 
@@ -163,10 +165,12 @@ $(document).ready(function() {
     //Initialise app
     skel.init();
 
+    //Drums
+    var drumNames = ["hihat", "snare", "uppertom", "midtom",
+        "floortom", "kick", "crash", "ride"];
     var container = document.getElementById("WebGL-output");
     soundManager = new audioManager();
-    soundManager.init();
-    soundManager.loadSound("hihat");
+    soundManager.init(drumNames);
 
     var app = new DrumApp();
     app.init(container);
