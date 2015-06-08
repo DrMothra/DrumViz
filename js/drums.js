@@ -8,6 +8,11 @@ var FLOORTOM=4, KICK=5, CRASH=6, RIDE=7;
 
 var soundManager = null;
 
+//DEBUG
+var score = [
+        { drum: HIHAT, notes: [0, 'E', 0.5, 'E', 1, 'E', 1.5, 'E', 2, 'E', 2.5, 'E', 3, 'E', 3.5, 'E'] }
+    ];
+
 function DrumApp() {
     BaseApp.call(this);
 }
@@ -16,6 +21,7 @@ DrumApp.prototype = new BaseApp();
 
 DrumApp.prototype.init = function(container) {
     BaseApp.prototype.init.call(this, container);
+    this.scoreLoaded = false;
 };
 
 DrumApp.prototype.createScene = function() {
@@ -85,6 +91,19 @@ DrumApp.prototype.createScene = function() {
     box.visible = false;
 };
 
+DrumApp.prototype.loadScore = function() {
+    //Convert json object to drum sounds and timing
+    var bar, drum, currentTime= 0, nextTime=0;
+    for(var i= 0, len=score.length; i<len; ++i) {
+        bar = score[i];
+        drum = bar.drum;
+        for(var note= 0, barLength=bar.notes.length; note<barLength; note+=2) {
+            nextTime = (bar.notes[note] * soundManager.getDuration(bar.notes[note+1]));
+            soundManager.playSound(bar.drum, nextTime+1);
+        }
+    }
+};
+
 DrumApp.prototype.createGUI = function() {
     //Create GUI - use dat.GUI for now
     var _this = this;
@@ -139,12 +158,18 @@ DrumApp.prototype.update = function() {
 
     this.elapsedTime += this.clock.getDelta();
 
+    /*
     if(this.elapsedTime >= 0.5) {
         this.hitMeshes[HIHAT].visible = !this.hitMeshes[HIHAT].visible;
         this.elapsedTime = 0;
         soundManager.playSound(KICK, 0);
         soundManager.playSound(HIHAT, 0);
         soundManager.playSound(CRASH, 0);
+    }
+    */
+    if(soundManager.soundsLoaded() && !this.scoreLoaded) {
+        this.scoreLoaded = true;
+        this.loadScore();
     }
 };
 
@@ -169,7 +194,7 @@ $(document).ready(function() {
     var drumNames = ["hihat", "snare", "uppertom", "midtom",
         "floortom", "kick", "crash", "ride"];
     var container = document.getElementById("WebGL-output");
-    soundManager = new audioManager();
+    soundManager = new drumManager();
     soundManager.init(drumNames);
 
     var app = new DrumApp();

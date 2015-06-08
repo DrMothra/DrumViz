@@ -4,19 +4,23 @@
 
 //Manage all web audio
 
-var audioManager = function() {
+var drumManager = function() {
     this.context = null;
     this.url = "sounds/";
     this.extension = ".wav";
+    this.numSoundsLoaded = 0;
+    this.allSoundsLoaded = false;
+    this.bpm = 60;
+    this.beatDuration = 60/this.bpm;
 };
 
 function onError() {
     alert("Error loading sound file");
 }
 
-audioManager.prototype = {
+drumManager.prototype = {
 
-    constructor: audioManager,
+    constructor: drumManager,
 
     init: function(sounds) {
         try {
@@ -46,10 +50,27 @@ audioManager.prototype = {
         request.onload = function() {
             _this.context.decodeAudioData(request.response, function(buffer) {
                 _this.soundBuffers[id] = buffer;
+                if(++_this.numSoundsLoaded >= _this.soundBuffers.length) _this.allSoundsLoaded = true;
             }, onError);
         };
 
         request.send();
+    },
+
+    soundsLoaded: function() {
+        return this.allSoundsLoaded;
+    },
+
+    getDuration: function(note) {
+        switch(note) {
+            case 'E':
+                //Eighth
+                return this.beatDuration;
+                break;
+
+            default:
+                break;
+        }
     },
 
     playSound: function(sound, time) {
