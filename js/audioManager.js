@@ -61,16 +61,8 @@ drumManager.prototype = {
         return this.allSoundsLoaded;
     },
 
-    getDuration: function(note) {
-        switch(note) {
-            case 'E':
-                //Eighth
-                return this.beatDuration;
-                break;
-
-            default:
-                break;
-        }
+    getDuration: function() {
+        return this.beatDuration;
     },
 
     playSound: function(sound, time) {

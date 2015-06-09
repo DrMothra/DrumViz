@@ -10,7 +10,54 @@ var soundManager = null;
 
 //DEBUG
 var score = [
-        { drum: HIHAT, notes: [0, 'E', 0.5, 'E', 1, 'E', 1.5, 'E', 2, 'E', 2.5, 'E', 3, 'E', 3.5, 'E'] }
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 1.5, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 1.5, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 1.75, 2.25, 3] },
+        { drum: KICK, notes: [0, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 1.75, 2.25, 3] },
+        { drum: KICK, notes: [0, 2] }
+    ]
+
     ];
 
 function DrumApp() {
@@ -93,13 +140,18 @@ DrumApp.prototype.createScene = function() {
 
 DrumApp.prototype.loadScore = function() {
     //Convert json object to drum sounds and timing
-    var bar, drum, currentTime= 0, nextTime=0;
-    for(var i= 0, len=score.length; i<len; ++i) {
-        bar = score[i];
-        drum = bar.drum;
-        for(var note= 0, barLength=bar.notes.length; note<barLength; note+=2) {
-            nextTime = (bar.notes[note] * soundManager.getDuration(bar.notes[note+1]));
-            soundManager.playSound(bar.drum, nextTime+1);
+    var currentBar, currentBeat, drum, nextTime=0;
+    var duration = soundManager.getDuration();
+    var barTime = duration * 4;
+    for(var bar= 0, numBars=score.length; bar<numBars; ++bar) {
+        currentBar = score[bar];
+        for(currentBeat=0; currentBeat<currentBar.length; ++currentBeat) {
+            drum = currentBar[currentBeat].drum;
+            for(var note= 0, barLength=currentBar[currentBeat].notes.length; note<barLength; ++note) {
+                nextTime = currentBar[currentBeat].notes[note] * duration;
+                soundManager.playSound(drum, (nextTime+1) + (barTime * bar));
+            }
+            nextTime=0;
         }
     }
 };
