@@ -69,6 +69,16 @@ DrumApp.prototype = new BaseApp();
 DrumApp.prototype.init = function(container) {
     BaseApp.prototype.init.call(this, container);
     this.scoreLoaded = false;
+    this.noteIndex = new Array(8);
+    for(var i=0; i<this.noteIndex.length; ++i) {
+        this.noteIndex[i] = 0;
+    }
+    this.currentBar = 0;
+    this.notesThisBar = 0;
+    this.barTime = 0;
+    this.currentNote = 0;
+    this.duration = 0;
+    this.hitDelay = 0.1;
 };
 
 DrumApp.prototype.createScene = function() {
@@ -126,6 +136,7 @@ DrumApp.prototype.createScene = function() {
         hitMesh.visible = false;
         this.scene.add(hitMesh);
         this.hitMeshes.push(hitMesh);
+        this.hitMeshes.timerStart = 0;
     }
 
     //DEBUG
@@ -141,14 +152,18 @@ DrumApp.prototype.createScene = function() {
 DrumApp.prototype.loadScore = function() {
     //Convert json object to drum sounds and timing
     var currentBar, currentBeat, drum, nextTime=0;
-    var duration = soundManager.getDuration();
-    var barTime = duration * 4;
-    for(var bar= 0, numBars=score.length; bar<numBars; ++bar) {
+    this.duration = soundManager.getDuration();
+    var barTime = this.duration * 4;
+    var bar = score[0], numBars;
+    for(var i=0; i<bar.length; ++i) {
+        this.notesThisBar += bar[i].notes.length;
+    }
+    for(bar= 0, numBars=score.length; bar<numBars; ++bar) {
         currentBar = score[bar];
         for(currentBeat=0; currentBeat<currentBar.length; ++currentBeat) {
             drum = currentBar[currentBeat].drum;
             for(var note= 0, barLength=currentBar[currentBeat].notes.length; note<barLength; ++note) {
-                nextTime = currentBar[currentBeat].notes[note] * duration;
+                nextTime = currentBar[currentBeat].notes[note] * this.duration;
                 soundManager.playSound(drum, (nextTime+1) + (barTime * bar));
             }
             nextTime=0;
@@ -207,21 +222,44 @@ DrumApp.prototype.changeBoxPos = function(pos, axis) {
 
 DrumApp.prototype.update = function() {
     BaseApp.prototype.update.call(this);
-
-    this.elapsedTime += this.clock.getDelta();
-
-    /*
-    if(this.elapsedTime >= 0.5) {
-        this.hitMeshes[HIHAT].visible = !this.hitMeshes[HIHAT].visible;
-        this.elapsedTime = 0;
-        soundManager.playSound(KICK, 0);
-        soundManager.playSound(HIHAT, 0);
-        soundManager.playSound(CRASH, 0);
-    }
-    */
+    var i, len;
     if(soundManager.soundsLoaded() && !this.scoreLoaded) {
         this.scoreLoaded = true;
         this.loadScore();
+    }
+
+    if(this.scoreLoaded) {
+        this.elapsedTime += this.clock.getDelta();
+        if(this.elapsedTime >= 1) {
+            var bar = score[this.currentBar], index;
+            for(i= 0, len=bar.length; i<len; ++i) {
+                index = this.noteIndex[i];
+                if(index < 0) continue;
+                if(this.elapsedTime >= (bar[i].notes[index] + this.barTime)) {
+                    this.hitMeshes[bar[i].drum].visible = true;
+                    this.hitMeshes[bar[i].drum].timerStart = this.elapsedTime;
+                    if(++this.noteIndex[i] >= bar[i].notes.length) this.noteIndex[i] = -1;
+                    if(++this.currentNote >= this.notesThisBar) {
+                        for(i=0; i<this.noteIndex.length; ++i) {
+                            this.noteIndex[i] = 0;
+                        }
+                        this.currentNote = this.notesThisBar = 0;
+                        ++this.currentBar;
+                        bar = score[this.currentBar];
+                        for(i=0; i<bar.length; ++i) {
+                            this.notesThisBar += bar[i].notes.length;
+                        }
+                        this.barTime = this.currentBar * this.duration * 4;
+                    }
+                }
+            }
+        }
+    }
+
+    for(i= 0, len=this.hitMeshes.length; i<len; ++i) {
+        if((this.elapsedTime - this.hitMeshes[i].timerStart) >= this.hitDelay) {
+            this.hitMeshes[i].visible = false;
+        }
     }
 };
 
