@@ -9,6 +9,59 @@ var FLOORTOM=4, KICK=5, CRASH=6, RIDE=7;
 var soundManager = null;
 
 //DEBUG
+/*
+var score = [
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 0.5, 0.75, 1.5, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 0.5, 0.75, 1.5, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 0.5, 0.75, 1.5, 2] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 0.5, 0.75, 1.5, 2] }
+    ]
+];
+*/
+var score = [
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3, 3.75] },
+        { drum: KICK, notes: [0, 0.25, 1.75, 2, 2.25] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 0.25, 1.75, 2, 2.25] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3, 3.75] },
+        { drum: KICK, notes: [0, 0.25, 1.75, 2, 2.25] }
+    ],
+
+    [
+        { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
+        { drum: SNARE, notes: [1, 3] },
+        { drum: KICK, notes: [0, 0.25, 1.75, 2, 2.25] }
+    ]
+];
+/*
 var score = [
     [
         { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
@@ -59,6 +112,7 @@ var score = [
     ]
 
     ];
+*/
 
 function DrumApp() {
     BaseApp.call(this);

@@ -10,7 +10,7 @@ var drumManager = function() {
     this.extension = ".wav";
     this.numSoundsLoaded = 0;
     this.allSoundsLoaded = false;
-    this.bpm = 60;
+    this.bpm = 100;
     this.beatDuration = 60/this.bpm;
 };
 
