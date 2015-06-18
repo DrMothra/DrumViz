@@ -36,10 +36,11 @@ var score = [
     ]
 ];
 */
+/*
 var score = [
     [
         { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
-        { drum: SNARE, notes: [1, 3, 3.75] },
+        { drum: SNARE, notes: [1, 3] },
         { drum: KICK, notes: [0, 0.25, 1.75, 2, 2.25] }
     ],
 
@@ -61,7 +62,7 @@ var score = [
         { drum: KICK, notes: [0, 0.25, 1.75, 2, 2.25] }
     ]
 ];
-/*
+*/
 var score = [
     [
         { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
@@ -112,7 +113,7 @@ var score = [
     ]
 
     ];
-*/
+
 
 function DrumApp() {
     BaseApp.call(this);
@@ -123,9 +124,9 @@ DrumApp.prototype = new BaseApp();
 DrumApp.prototype.init = function(container) {
     BaseApp.prototype.init.call(this, container);
     this.scoreLoaded = false;
-    this.noteIndex = new Array(8);
-    for(var i=0; i<this.noteIndex.length; ++i) {
-        this.noteIndex[i] = 0;
+    this.drumIndex = new Array(8);
+    for(var i=0; i<this.drumIndex.length; ++i) {
+        this.drumIndex[i] = 0;
     }
     this.currentBar = 0;
     this.notesThisBar = 0;
@@ -133,6 +134,9 @@ DrumApp.prototype.init = function(container) {
     this.currentNote = 0;
     this.duration = 0;
     this.hitDelay = 0.1;
+    this.currentScore = [];
+    this.timeNow = 0;
+    this.playNow = false;
 };
 
 DrumApp.prototype.createScene = function() {
@@ -148,7 +152,7 @@ DrumApp.prototype.createScene = function() {
         -88, 259, -20, //Upper tom
         50, 259, -23,  //Mid tom
         153, 161, 66,  //Floor tom
-        -23, 31, -1,   //Kick
+        -23, 14, 20,   //Kick
         -197, 291, -56,//Crash
         161, 313, -77
     ];
@@ -193,6 +197,7 @@ DrumApp.prototype.createScene = function() {
         this.hitMeshes.timerStart = 0;
     }
 
+    this.hitMeshes[KICK].rotation.x = Math.PI/2;
     //DEBUG
     //Positioning helper
     var boxGeom = new THREE.BoxGeometry(10, 10, 10);
@@ -207,8 +212,9 @@ DrumApp.prototype.loadScore = function() {
     //Convert json object to drum sounds and timing
     var currentBar, currentBeat, drum, nextTime=0;
     this.duration = soundManager.getDuration();
-    var barTime = this.duration * 4;
+    this.barTime = this.duration * 4;
     var bar = score[0], numBars;
+    this.totalBars = score.length;
     for(var i=0; i<bar.length; ++i) {
         this.notesThisBar += bar[i].notes.length;
     }
@@ -218,10 +224,38 @@ DrumApp.prototype.loadScore = function() {
             drum = currentBar[currentBeat].drum;
             for(var note= 0, barLength=currentBar[currentBeat].notes.length; note<barLength; ++note) {
                 nextTime = currentBar[currentBeat].notes[note] * this.duration;
-                soundManager.playSound(drum, (nextTime+1) + (barTime * bar));
+                this.currentScore.push(drum);
+                this.currentScore.push(nextTime + (this.barTime * bar));
             }
             nextTime=0;
         }
+    }
+};
+
+DrumApp.prototype.playScore = function() {
+    //Play current score
+    this.playNow = true;
+    this.elapsedTime = 0;
+    for(var i= 0, len=this.currentScore.length; i<len; i+=2) {
+        soundManager.playSound(this.currentScore[i], this.currentScore[i+1]);
+    }
+};
+
+DrumApp.prototype.resetScore = function() {
+    //Reset everything
+    var bar, i, len;
+    this.currentBar = 0;
+    this.timeNow = 0;
+    this.playNow = false;
+    bar = score[this.currentBar];
+    for(i=0; i<bar.length; ++i) {
+        this.notesThisBar += bar[i].notes.length;
+    }
+    for(i=0; i<this.drumIndex.length; ++i) {
+        this.drumIndex[i] = 0;
+    }
+    for(i= 0, len=this.hitMeshes.length; i<len; ++i) {
+        this.hitMeshes[i].visible = false;
     }
 };
 
@@ -276,34 +310,36 @@ DrumApp.prototype.changeBoxPos = function(pos, axis) {
 
 DrumApp.prototype.update = function() {
     BaseApp.prototype.update.call(this);
+    this.elapsedTime += this.clock.getDelta();
     var i, len;
     if(soundManager.soundsLoaded() && !this.scoreLoaded) {
         this.scoreLoaded = true;
         this.loadScore();
     }
 
-    if(this.scoreLoaded) {
-        this.elapsedTime += this.clock.getDelta();
-        if(this.elapsedTime >= 1) {
-            var bar = score[this.currentBar], index;
-            for(i= 0, len=bar.length; i<len; ++i) {
-                index = this.noteIndex[i];
-                if(index < 0) continue;
-                if(this.elapsedTime >= (bar[i].notes[index] + this.barTime)) {
-                    this.hitMeshes[bar[i].drum].visible = true;
-                    this.hitMeshes[bar[i].drum].timerStart = this.elapsedTime;
-                    if(++this.noteIndex[i] >= bar[i].notes.length) this.noteIndex[i] = -1;
-                    if(++this.currentNote >= this.notesThisBar) {
-                        for(i=0; i<this.noteIndex.length; ++i) {
-                            this.noteIndex[i] = 0;
-                        }
-                        this.currentNote = this.notesThisBar = 0;
-                        ++this.currentBar;
-                        bar = score[this.currentBar];
-                        for(i=0; i<bar.length; ++i) {
-                            this.notesThisBar += bar[i].notes.length;
-                        }
-                        this.barTime = this.currentBar * this.duration * 4;
+
+    if(this.playNow) {
+        var bar = score[this.currentBar], index, drum;
+        for(i= 0, len=bar.length; i<len; ++i) {
+            drum = bar[i].drum;
+            index = this.drumIndex[drum];
+            if(index < 0) continue;
+            if(this.elapsedTime >= ((bar[i].notes[index] * this.duration) + (this.barTime * this.currentBar))) {
+                this.hitMeshes[drum].visible = true;
+                this.hitMeshes[drum].timerStart = this.elapsedTime;
+                if(++this.drumIndex[drum] >= bar[i].notes.length) this.drumIndex[drum] = -1;
+                if(++this.currentNote >= this.notesThisBar) {
+                    for(i=0; i<this.drumIndex.length; ++i) {
+                        this.drumIndex[i] = 0;
+                    }
+                    this.currentNote = this.notesThisBar = 0;
+                    if(++this.currentBar >= this.totalBars) {
+                        this.resetScore();
+                        return;
+                    }
+                    bar = score[this.currentBar];
+                    for(i=0; i<bar.length; ++i) {
+                        this.notesThisBar += bar[i].notes.length;
                     }
                 }
             }
@@ -315,6 +351,7 @@ DrumApp.prototype.update = function() {
             this.hitMeshes[i].visible = false;
         }
     }
+
 };
 
 DrumApp.prototype.keydown = function(event) {
@@ -343,11 +380,15 @@ $(document).ready(function() {
 
     var app = new DrumApp();
     app.init(container);
-    app.createGUI();
+    //app.createGUI();
     app.createScene();
 
     $(document).keydown(function(event) {
         app.keydown(event);
+    });
+
+    $('#play').on('click', function() {
+        app.playScore();
     });
 
     app.run();

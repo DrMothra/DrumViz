@@ -69,6 +69,6 @@ drumManager.prototype = {
         var source = this.context.createBufferSource();
         source.buffer = this.soundBuffers[sound];
         source.connect(this.context.destination);
-        source.start(time);
+        source.start(this.context.currentTime+time);
     }
 };
