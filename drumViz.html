@@ -22,7 +22,7 @@
     <script type="text/javascript" src="js/OBJMTLLoader.js"></script>
 
     <script type="text/javascript" src="js/audioManager.js"></script>
-    <script type="text/javascript" src="js/drums.js"></script>
+    <script type="text/javascript" src="js/drums.js?v=0.1"></script>
 
     <link href="css/drumStyles.css?v=0.1" rel="stylesheet" type="text/css">
 </head>
@@ -33,8 +33,22 @@
 <!-- Div which will hold the Output -->
 <div id="WebGL-output">
 </div>
+<div id="score">
+    <img src="images/drumScore.jpg">
+</div>
 <div id="controls">
-    <button id="play">PLAY</button>
+    <div>
+        <img id="play" src="images/play.png">
+    </div>
+    <div id="tracks">
+        Track:
+        <input type="number" value="0" min="0" max="5">
+    </div>
+    <div id="beats">
+        Beats:
+        <input id="bpm" type="number" value="100" min="30" max="240">
+    </div>
+
 </div>
 
 </body>

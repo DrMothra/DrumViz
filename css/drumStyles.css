@@ -13,6 +13,27 @@ body {
 }
 #controls {
     position: absolute;
-    top: 5%;
-    left: 5%;
+    top: 25%;
+    left: 85%;
+    padding: 2%;
+    text-align: center;
+    border-radius: 10px;
+    border: 2px solid black;
+}
+#controls div {
+    margin-bottom: 10%;
+}
+#controls img {
+    width: 50%;
+}
+#score {
+    position: absolute;
+    top: 2%;
+    left: 0%;
+    width: 100%;
+    text-align: center;
+}
+
+#score img {
+    width: 50%;
 }

@@ -65,6 +65,11 @@ drumManager.prototype = {
         return this.beatDuration;
     },
 
+    setDuration: function(bpm) {
+        this.bpm = bpm;
+        this.beatDuration = 60/this.bpm;
+    },
+
     playSound: function(sound, time) {
         var source = this.context.createBufferSource();
         source.buffer = this.soundBuffers[sound];

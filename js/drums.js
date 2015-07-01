@@ -9,7 +9,7 @@ var FLOORTOM=4, KICK=5, CRASH=6, RIDE=7;
 var soundManager = null;
 
 //DEBUG
-/*
+
 var score = [
     [
         { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
@@ -35,7 +35,7 @@ var score = [
         { drum: KICK, notes: [0, 0.5, 0.75, 1.5, 2] }
     ]
 ];
-*/
+
 /*
 var score = [
     [
@@ -63,6 +63,7 @@ var score = [
     ]
 ];
 */
+/*
 var score = [
     [
         { drum: HIHAT, notes: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5] },
@@ -113,7 +114,7 @@ var score = [
     ]
 
     ];
-
+*/
 
 function DrumApp() {
     BaseApp.call(this);
@@ -210,6 +211,7 @@ DrumApp.prototype.createScene = function() {
 
 DrumApp.prototype.loadScore = function() {
     //Convert json object to drum sounds and timing
+    this.currentScore.length = 0;
     var currentBar, currentBeat, drum, nextTime=0;
     this.duration = soundManager.getDuration();
     this.barTime = this.duration * 4;
@@ -234,8 +236,10 @@ DrumApp.prototype.loadScore = function() {
 
 DrumApp.prototype.playScore = function() {
     //Play current score
-    this.playNow = true;
+    soundManager.setDuration($('#bpm').val());
+    this.loadScore();
     this.elapsedTime = 0;
+    this.playNow = true;
     for(var i= 0, len=this.currentScore.length; i<len; i+=2) {
         soundManager.playSound(this.currentScore[i], this.currentScore[i+1]);
     }
@@ -247,15 +251,13 @@ DrumApp.prototype.resetScore = function() {
     this.currentBar = 0;
     this.timeNow = 0;
     this.playNow = false;
-    bar = score[this.currentBar];
-    for(i=0; i<bar.length; ++i) {
-        this.notesThisBar += bar[i].notes.length;
-    }
+    this.currentNote = 0;
     for(i=0; i<this.drumIndex.length; ++i) {
         this.drumIndex[i] = 0;
     }
     for(i= 0, len=this.hitMeshes.length; i<len; ++i) {
         this.hitMeshes[i].visible = false;
+        this.hitMeshes[i].timerStart = 0;
     }
 };
 
@@ -314,7 +316,7 @@ DrumApp.prototype.update = function() {
     var i, len;
     if(soundManager.soundsLoaded() && !this.scoreLoaded) {
         this.scoreLoaded = true;
-        this.loadScore();
+        //this.loadScore();
     }
 
 
@@ -326,6 +328,9 @@ DrumApp.prototype.update = function() {
             if(index < 0) continue;
             if(this.elapsedTime >= ((bar[i].notes[index] * this.duration) + (this.barTime * this.currentBar))) {
                 this.hitMeshes[drum].visible = true;
+                //DEBUG
+                console.log("On");
+
                 this.hitMeshes[drum].timerStart = this.elapsedTime;
                 if(++this.drumIndex[drum] >= bar[i].notes.length) this.drumIndex[drum] = -1;
                 if(++this.currentNote >= this.notesThisBar) {
